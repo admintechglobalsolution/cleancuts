@@ -18,7 +18,6 @@ This README contains **everything needed** to set up, run, migrate, view, and de
 
 ## 📁 Project Structure
 
-
 ```
 └── 📁src
     └── 📁app
@@ -50,10 +49,12 @@ pnpm add pg
 pnpm add @prisma/adapter-pg
 npx prisma migrate dev --name init
 pnpm prisma:studio
-pnpm dev -- --hostname 0.0.0.0  
-npx prisma studio 
+pnpm dev -- --hostname 0.0.0.0
+npx prisma studio
 npx prisma migrate dev
 npx prisma migrate dev --name unique_contact
 npx prisma generate
 npx prisma db seed
 
+pnpm remove @prisma/adapter-pg pg @types/pg
+```
