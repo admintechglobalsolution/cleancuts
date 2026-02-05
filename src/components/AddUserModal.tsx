@@ -2,109 +2,169 @@
 
 import { useState } from "react";
 import styles from "./AddUserModal.module.css";
-import toast from "react-hot-toast";
 import { User } from "@/types/user";
 
 type Props = {
-    isOpen: boolean;
-    onClose: () => void;
-    onUserAdded: (newUser: User) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onUserAdded: (
+    newUser: User | null,
+    status: "success" | "exists" | "error",
+  ) => void;
 };
 
 export default function AddUserModal({ isOpen, onClose, onUserAdded }: Props) {
-    const [name, setName] = useState("");
-    const [contact, setContact] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name || !contact) {
-            toast.error("Please fill in all fields");
-            return;
-        }
+  const resetForm = () => {
+    setName("");
+    setContact("");
+    setMessage(null);
+  };
 
-        setLoading(true);
+  // ✅ NUMBERS ONLY + MAX 10
+  const handleContactChange = (value: string) => {
+    if (/^\d*$/.test(value) && value.length <= 10) {
+      setContact(value);
+    }
+  };
 
-        try {
-            const res = await fetch("/api/users", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, contact }),
-            });
+  // ✅ FORM VALIDITY
+  const isFormValid = name.trim().length > 0 && /^\d{10}$/.test(contact);
 
-            if (!res.ok) {
-                throw new Error("Failed to create user");
-            }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid) return;
 
-            const newUser = await res.json();
-            toast.success("User added successfully");
-            onUserAdded(newUser);
+    setLoading(true);
+    setMessage(null);
 
-            // Clear form
-            setName("");
-            setContact("");
-            onClose();
-        } catch (error) {
-            toast.error("Failed to add user");
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          contact,
+        }),
+      });
 
-    return (
-        <div className={styles.overlay}>
-            <div className={styles.modal}>
-                <div className={styles.header}>
-                    <h2>Add New User</h2>
-                    <button onClick={onClose} className={styles.closeBtn}>
-                        &times;
-                    </button>
-                </div>
+      if (res.status === 409) {
+        setMessage({
+          type: "error",
+          text: "Contact already registered",
+        });
+        onUserAdded(null, "exists");
+        return;
+      }
 
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.formGroup}>
-                        <label>Name</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter user name"
-                            autoFocus
-                        />
-                    </div>
+      if (!res.ok) throw new Error();
 
-                    <div className={styles.formGroup}>
-                        <label>Contact</label>
-                        <input
-                            type="text"
-                            value={contact}
-                            onChange={(e) => setContact(e.target.value)}
-                            placeholder="Enter contact number"
-                        />
-                    </div>
+      const newUser: User = await res.json();
 
-                    <div className={styles.actions}>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className={styles.cancelBtn}
-                            disabled={loading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className={styles.submitBtn}
-                            disabled={loading}
-                        >
-                            {loading ? "Adding..." : "Add User"}
-                        </button>
-                    </div>
-                </form>
-            </div>
+      setMessage({
+        type: "success",
+        text: "Contact successfully registered.",
+      });
+
+      onUserAdded(newUser, "success");
+
+      setTimeout(() => {
+        resetForm();
+        onClose();
+      }, 2000);
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Failed to register contact",
+      });
+      onUserAdded(null, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h2>Add New User</h2>
+          <button
+            className={styles.closeBtn}
+            onClick={() => {
+              resetForm();
+              onClose();
+            }}
+          >
+            &times;
+          </button>
         </div>
-    );
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label>Name</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+              autoFocus
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label>Contact (10 digits)</label>
+            <input
+              value={contact}
+              onChange={(e) => handleContactChange(e.target.value)}
+              inputMode="numeric"
+              placeholder="Enter 10-digit number"
+              disabled={loading}
+            />
+          </div>
+
+          {message && (
+            <p
+              className={
+                message.type === "success"
+                  ? styles.successMessage
+                  : styles.errorMessage
+              }
+            >
+              {message.text}
+            </p>
+          )}
+
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.cancelBtn}
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+            >
+              Cancel
+            </button>
+
+            {/* ✅ DISABLED UNTIL VALID */}
+            <button
+              type="submit"
+              className={styles.submitBtn}
+              disabled={!isFormValid || loading}
+            >
+              {loading ? "Saving..." : "Add User"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

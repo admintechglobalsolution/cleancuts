@@ -5,7 +5,6 @@ export async function PATCH(req: Request) {
     try {
         const body = await req.json();
         const { id, status } = body;
-        console.log("PATCH /api/users/status received:", body);
 
         if (!id || !status) {
             return NextResponse.json(
@@ -21,7 +20,6 @@ export async function PATCH(req: Request) {
 
         return NextResponse.json(updatedUser);
     } catch (error) {
-        console.error("STATUS UPDATE ERROR:", error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : "Internal server error" },
             { status: 500 }

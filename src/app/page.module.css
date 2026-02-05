@@ -155,7 +155,9 @@ tbody tr:hover {
   background-color: var(--color-status-active);
   color: #ffffff;
   font-weight: 600;
-  transition: background-color 0.15s ease, transform 0.05s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.05s ease;
 }
 
 .actionBtn:hover {
@@ -183,6 +185,42 @@ tbody tr:hover {
   justify-content: center;
   color: var(--color-text-secondary);
   font-size: 15px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.pageBtn {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pageBtn:hover {
+  background: #f3f4f6;
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: default;
 }
 
 /* responsive */
