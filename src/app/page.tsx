@@ -1,65 +1,131 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
 
-export default function Home() {
+import { useEffect, useMemo, useState } from "react";
+import UserTable from "@/components/UserTable";
+import AddUserModal from "@/components/AddUserModal";
+import styles from "./page.module.css";
+import { User } from "@/types/user";
+import toast, { Toaster } from "react-hot-toast";
+
+export default function Page() {
+  const [search, setSearch] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 🔹 Fetch users from DB on load
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const res = await fetch("/api/users");
+      const data: User[] = await res.json();
+      console.log("Frontend fetched users:", data);
+      setUsers(data);
+      setLoading(false);
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return users;
+
+    return users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(query) ||
+        user.contact.toLowerCase().includes(query),
+    );
+  }, [search, users]);
+
+  // ✅ SAVE STATUS → DB
+  const handleSaveStatus = async (id: string, status: "New" | "Active") => {
+    console.log("Saving status:", { id, status });
+    const res = await fetch("/api/users/status", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+
+    if (!res.ok) {
+      toast.error("Failed to save status");
+      return;
+    }
+
+    // update local state AFTER DB success
+    setUsers((prev: User[]) =>
+      prev.map((u: User) => (u.id === id ? { ...u, status } : u)),
+    );
+    toast.success("Status updated successfully");
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: "#333",
+              color: "#fff",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              fontSize: "14px",
+            },
+            success: {
+              style: {
+                background: "#16a34a",
+                color: "#fff",
+              },
+              iconTheme: {
+                primary: "#fff",
+                secondary: "#16a34a",
+              },
+            },
+            error: {
+              style: {
+                background: "#dc2626",
+                color: "#fff",
+              },
+              iconTheme: {
+                primary: "#fff",
+                secondary: "#dc2626",
+              },
+            },
+          }}
         />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className={styles.header}>
+          <h1 className={styles.title}>Clean Cuts</h1>
+
+          <button
+            className={styles.addBtn}
+            onClick={() => setIsModalOpen(true)}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            + Add User
+          </button>
+
+          <input
+            type="text"
+            placeholder="Search by name or contact"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className={styles.search}
+          />
         </div>
+
+        <UserTable
+          users={filteredUsers}
+          onSaveStatus={handleSaveStatus}
+          loading={loading}
+        />
+
+        <AddUserModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onUserAdded={(newUser) => {
+            setUsers((prev) => [...prev, newUser]);
+            setIsModalOpen(false);
+          }}
+        />
       </main>
     </div>
   );
