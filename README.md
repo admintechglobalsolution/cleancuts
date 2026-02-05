@@ -55,6 +55,7 @@ npx prisma migrate dev
 npx prisma migrate dev --name unique_contact
 npx prisma generate
 npx prisma db seed
+pnpm run build
 
 pnpm remove @prisma/adapter-pg pg @types/pg
 ```
