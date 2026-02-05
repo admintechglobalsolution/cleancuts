@@ -30,14 +30,12 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: Props) {
     setMessage(null);
   };
 
-  // ✅ NUMBERS ONLY + MAX 10
   const handleContactChange = (value: string) => {
     if (/^\d*$/.test(value) && value.length <= 10) {
       setContact(value);
     }
   };
 
-  // ✅ FORM VALIDITY
   const isFormValid = name.trim().length > 0 && /^\d{10}$/.test(contact);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,7 +152,6 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: Props) {
               Cancel
             </button>
 
-            {/* ✅ DISABLED UNTIL VALID */}
             <button
               type="submit"
               className={styles.submitBtn}

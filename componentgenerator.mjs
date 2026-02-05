@@ -4,26 +4,20 @@ import path from "path"
 const root = process.cwd()
 
 const pathsToCreate = [
-  // Prisma (DB layer)
   "prisma/schema.prisma",
 
-  // App
   "src/app/page.tsx",
   "src/app/page.module.css",
   "src/app/layout.tsx",
   "src/app/loading.tsx",
   "src/app/error.tsx",
 
-  // API routes
   "src/app/api/users/status/route.ts",
 
-  // Components
   "src/components/UserTable.tsx",
 
-  // Lib (infrastructure)
   "src/lib/prisma.ts",
 
-  // Types
   "src/types/user.ts",
 ]
 

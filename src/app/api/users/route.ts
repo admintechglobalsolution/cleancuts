@@ -21,7 +21,6 @@ export async function POST(req: Request) {
   try {
     const { name, contact } = await req.json();
 
-    // ✅ Required fields
     if (!name || !contact) {
       return NextResponse.json(
         { error: "Name and Contact are required" },
@@ -29,7 +28,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 🔒 STRICT CONTACT VALIDATION (numbers only, exactly 10 digits)
     if (!/^\d{10}$/.test(contact)) {
       return NextResponse.json(
         { error: "Contact must be exactly 10 digits" },
@@ -37,7 +35,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Check duplicate contact
     const existingUser = await prisma.user.findUnique({
       where: { contact },
     });

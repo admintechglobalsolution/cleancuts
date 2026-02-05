@@ -19,7 +19,6 @@ export default function UserTable({ users, onSaveStatus, loading }: Props) {
 
   const totalPages = Math.ceil(users.length / PAGE_SIZE);
 
-  // 🔢 Paginated users
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return users.slice(start, start + PAGE_SIZE);
@@ -61,7 +60,6 @@ export default function UserTable({ users, onSaveStatus, loading }: Props) {
           ) : (
             paginatedUsers.map((user, index) => (
               <tr key={user.id}>
-                {/* ✅ Serial number across pages */}
                 <td className={styles.td}>
                   {(currentPage - 1) * PAGE_SIZE + index + 1}
                 </td>
@@ -123,7 +121,6 @@ export default function UserTable({ users, onSaveStatus, loading }: Props) {
         </tbody>
       </table>
 
-      {/* 📄 Pagination */}
       {!loading && totalPages > 1 && (
         <div className={styles.pagination}>
           <button

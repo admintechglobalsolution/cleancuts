@@ -7,9 +7,6 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is missing");
 }
 
-/**
- * SAME adapter setup as src/lib/prisma.ts
- */
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -92,7 +89,7 @@ async function main() {
     const contact = match[2].trim();
 
     await prisma.user.upsert({
-      where: { contact }, // ✅ unique field
+      where: { contact },
       update: {
         name,
         status: UserStatus.New,

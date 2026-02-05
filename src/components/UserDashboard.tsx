@@ -15,7 +15,6 @@ export default function UserDashboard({ initialUsers }: Props) {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ SEARCH INPUT REF
   const searchRef = useRef<HTMLInputElement>(null);
 
   const filteredUsers = useMemo(() => {
@@ -58,7 +57,7 @@ export default function UserDashboard({ initialUsers }: Props) {
           </button>
 
           <input
-            ref={searchRef} // ✅ ATTACHED
+            ref={searchRef}
             type="text"
             placeholder="Search by name or contact"
             value={search}
@@ -78,7 +77,6 @@ export default function UserDashboard({ initialUsers }: Props) {
           onClose={() => {
             setIsModalOpen(false);
 
-            // ✅ AUTO-FOCUS SEARCH AFTER MODAL CLOSE
             setTimeout(() => {
               searchRef.current?.focus();
             }, 200);
